@@ -90,7 +90,7 @@ struct Resonator {
 };
 
 struct FXParams { float p1, p2; };
-FXParams params[5]; // Page 0: Reverb, Page 1: Delay, Page 2: Flanger, Page 3: Bitcrusher, Page 4: Master DJ
+FXParams params[5]; // Page 0: Bitcrusher, Page 1: Flanger, Page 2: Tape Delay, Page 3: Reverb, Page 4: Master DJ
 int currentPage = 4; // Start on Page 4 (Master DJ)
 
 struct PotState { float locked_val; bool locked; };
@@ -269,7 +269,7 @@ void on_pwm_wrap() {
   flanger_ptr = (flanger_ptr + 1) & (FLANGER_SIZE-1);
   
   // Crossfade for flanger mix (up to 50/50 mix based on depth/fb macro)
-  float fl_mix_amt = params[2].p2 > 0.01f ? 0.5f : 0.0f; 
+  float fl_mix_amt = params[1].p2 > 0.01f ? 0.5f : 0.0f; 
   float flanger_mixed = bc_processed * (1.0f - fl_mix_amt) + (bc_processed + fl_out) * fl_mix_amt;
 
   // --- TAPE DELAY ---
@@ -379,10 +379,10 @@ void updatePageLED() {
   if (system_hw_is_legacy) {
     return; // Legacy LED is updated dynamically in runLegacyLEDAnimation()
   }
-  if      (currentPage == 0) led.setPixelColor(0, led.Color(0, 255, 0));   // 0: Green (Reverb)
-  else if (currentPage == 1) led.setPixelColor(0, led.Color(0, 255, 255)); // 1: Cyan (Delay)
-  else if (currentPage == 2) led.setPixelColor(0, led.Color(255, 0, 255)); // 2: Magenta (Flanger)
-  else if (currentPage == 3) led.setPixelColor(0, led.Color(255, 255, 0)); // 3: Yellow (Bitcrusher)
+  if      (currentPage == 0) led.setPixelColor(0, led.Color(255, 255, 0)); // 0: Yellow (Bitcrusher)
+  else if (currentPage == 1) led.setPixelColor(0, led.Color(255, 0, 255)); // 1: Magenta (Flanger)
+  else if (currentPage == 2) led.setPixelColor(0, led.Color(0, 255, 255)); // 2: Cyan (Tape Delay)
+  else if (currentPage == 3) led.setPixelColor(0, led.Color(0, 255, 0));   // 3: Green (Reverb)
   else if (currentPage == 4) led.setPixelColor(0, led.Color(0, 0, 255));   // 4: Blue (Master DJ)
   else led.setPixelColor(0, led.Color(50, 50, 50)); // Fallback
   led.show();
@@ -391,31 +391,31 @@ void updatePageLED() {
 void runLegacyLEDAnimation() {
   uint16_t pwm_val = 0;
   
-  if (currentPage == 0) { // Reverb
-    // Slow pulsing breath
-    float brightness = 0.4f + 0.35f * sinf(millis() * 0.002f);
+  if (currentPage == 0) { // Bitcrusher
+    // Jittery digital flicker proportional to crushing intensity
+    float noise = (float)(fast_rand() & 255) / 255.0f;
+    float intensity = (params[0].p1 + params[0].p2) * 0.5f;
+    float brightness = 0.1f + noise * 0.7f * intensity;
     pwm_val = (uint16_t)(brightness * 4095.0f);
-  } 
-  else if (currentPage == 1) { // Tape Delay
+  }
+  else if (currentPage == 1) { // Flanger
+    // Pulse in sync with the flanger LFO
+    float lfo = (sinf(flanger_lfo_phase * TWO_PI) + 1.0f) * 0.5f;
+    float brightness = 0.05f + lfo * 0.75f;
+    pwm_val = (uint16_t)(brightness * 4095.0f);
+  }
+  else if (currentPage == 2) { // Tape Delay
     // Blink at the rate of the current delay time
     float delay_ms = 1000.0f * (current_delay_samples / AUDIO_FS);
     if (delay_ms < 10.0f) delay_ms = 10.0f;
     uint32_t t = millis() % (uint32_t)delay_ms;
     pwm_val = (t < 80) ? 3500 : 100; // Bright flash, dim background
-  } 
-  else if (currentPage == 2) { // Flanger
-    // Pulse in sync with the flanger LFO
-    float lfo = (sinf(flanger_lfo_phase * TWO_PI) + 1.0f) * 0.5f;
-    float brightness = 0.05f + lfo * 0.75f;
+  }
+  else if (currentPage == 3) { // Reverb
+    // Slow pulsing breath
+    float brightness = 0.4f + 0.35f * sinf(millis() * 0.002f);
     pwm_val = (uint16_t)(brightness * 4095.0f);
-  } 
-  else if (currentPage == 3) { // Bitcrusher
-    // Jittery digital flicker proportional to crushing intensity
-    float noise = (float)(fast_rand() & 255) / 255.0f;
-    float intensity = (params[3].p1 + params[3].p2) * 0.5f;
-    float brightness = 0.1f + noise * 0.7f * intensity;
-    pwm_val = (uint16_t)(brightness * 4095.0f);
-  } 
+  }
   else if (currentPage == 4) { // Master DJ
     // Solid steady light to easily distinguish the Master page
     pwm_val = 3000;
@@ -507,35 +507,8 @@ void runBootMenu() {
 }
 
 void updateFXParams() {
-  // Reverb (Page 0)
-  rev_room_size = 0.7f + params[0].p1 * 0.28f; // 0.7 to 0.98
-  rev_mix = params[0].p2 * 1.5f;
-  rev_damp = 0.4f;
-
-  // Tape Delay (Page 1)
-  float d_time;
-  bool clock_active = (clock_period_ms > 0 && clock_period_ms < 2000 && (millis() - last_clock_time < 2000));
-  
-  if (clock_active) {
-      int div_idx = (int)(params[1].p1 * 6.99f);
-      float mults[7] = {0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 3.0f, 4.0f};
-      d_time = (clock_period_ms * mults[div_idx]) / 1000.0f;
-  } else {
-      d_time = 0.02f + params[1].p1 * 0.85f; // 20ms to 870ms
-  }
-  
-  target_delay_samples = d_time * AUDIO_FS;
-  delay_fb = params[1].p2 * 0.95f; // up to self-oscillation
-  delay_mix = params[1].p2 * 0.8f;
-
-  // Flanger (Page 2)
-  float rate_hz = 0.05f + params[2].p1 * 5.0f; // 0.05Hz to 5.05Hz
-  flanger_rate = rate_hz * INV_FS;
-  flanger_depth = params[2].p2 * 200.0f; // max ~5.5ms modulation depth
-  flanger_fb = params[2].p2 * 0.90f; // up to 90% feedback for strong resonance
-
-  // Bitcrusher / Downsampler (Page 3)
-  float bc_knob = params[3].p1;
+  // Bitcrusher / Downsampler (Page 0)
+  float bc_knob = params[0].p1;
   if (bc_knob < 0.01f) {
       bc_steps = 65536.0f;
       bc_inv_steps = 1.0f / 65536.0f;
@@ -546,8 +519,35 @@ void updateFXParams() {
       bc_steps = powf(2.0f, bits);
       bc_inv_steps = 1.0f / bc_steps;
   }
-  float ds_knob = params[3].p2;
+  float ds_knob = params[0].p2;
   ds_period = 1 + (int)(ds_knob * ds_knob * 63.0f); // 1 to 64 samples downsampling period
+
+  // Flanger (Page 1)
+  float rate_hz = 0.05f + params[1].p1 * 5.0f; // 0.05Hz to 5.05Hz
+  flanger_rate = rate_hz * INV_FS;
+  flanger_depth = params[1].p2 * 200.0f; // max ~5.5ms modulation depth
+  flanger_fb = params[1].p2 * 0.90f; // up to 90% feedback for strong resonance
+
+  // Tape Delay (Page 2)
+  float d_time;
+  bool clock_active = (clock_period_ms > 0 && clock_period_ms < 2000 && (millis() - last_clock_time < 2000));
+  
+  if (clock_active) {
+      int div_idx = (int)(params[2].p1 * 6.99f);
+      float mults[7] = {0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 3.0f, 4.0f};
+      d_time = (clock_period_ms * mults[div_idx]) / 1000.0f;
+  } else {
+      d_time = 0.02f + params[2].p1 * 0.85f; // 20ms to 870ms
+  }
+  
+  target_delay_samples = d_time * AUDIO_FS;
+  delay_fb = params[2].p2 * 0.95f; // up to self-oscillation
+  delay_mix = params[2].p2 * 0.8f;
+
+  // Reverb (Page 3)
+  rev_room_size = 0.7f + params[3].p1 * 0.28f; // 0.7 to 0.98
+  rev_mix = params[3].p2 * 1.5f;
+  rev_damp = 0.4f;
 
   // Master DJ FX & Global Wet (Page 4)
   float dj = params[4].p1;

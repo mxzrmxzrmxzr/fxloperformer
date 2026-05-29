@@ -2,7 +2,7 @@
 
 A simple, audio effects processor firmware for the **WGD Modular Melon** Eurorack module (based on the Raspberry Pi RP2350 microcontroller). 
 
-**FX LoPerformer** is an adaptation of the FX part of the *Generative Drum Synthesizer* firmware by Vincent. Combining a tape delay, a reverb, a flanger, a bitcrusher, and a DJ filter, it offers a comprehensive suite of effects for Eurorack systems in a compact package with performance in mind. Don't expect hifi, expect fun!
+**FX LoPerformer** is an adaptation of the FX part of the *Generative Drum Synthesizer* firmware by Vincent Maurer. Combining a tape delay, a reverb, a flanger, a bitcrusher, and a DJ filter, it offers a comprehensive suite of effects for Eurorack systems in a compact package with performance in mind. Don't expect hifi, expect fun!
 
 ---
 
@@ -32,6 +32,7 @@ A simple, audio effects processor firmware for the **WGD Modular Melon** Eurorac
 | :--- | :--- | :--- |
 | **POT 1** | ADC0 / A0 | Page Parameter 1 |
 | **POT 2** | ADC1 / A1 | Page Parameter 2 |
+| **POT 3** | ADC1 / A1 | Unused - leave in middle position |
 | **CV IN** | ADC2 / A2 | External Audio Input |
 | **IN 1** | GPIO 7 | Clock / Sync Input for Tape Delay (Rising Edge) |
 | **IN 2** | GPIO 0 | Pseudo-CV Gate Control (HIGH = 100% Wet Mix) |
@@ -121,7 +122,7 @@ arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2350 --export-binaries fx-
 ```
 
 ### Flashing the Module
-1. Connect the WGD Melon module (or the Seeed Studio Xiao RP2350) to your computer.
+1. Connect the Seeed Studio Xiao RP2350 to your computer.
 2. Put the RP2350 into **BOOTSEL** mode (hold the BOOT button while resetting or plugging in).
 3. A mass storage drive named `RPI-RP2` will appear.
 4. Drag and drop the compiled `.uf2` file (located in the `build/` directory) onto the drive. The module will reboot and start running FX LoPerformer immediately.
@@ -130,6 +131,6 @@ arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2350 --export-binaries fx-
 
 ## License & Credits
 - **Base Hardware**: WGD Modular Melon, inspired by the HAGIWO Mod 2.
-- **Base Firmware**: Originally derived from Vincent's *Generative Drum Synthesizer*.
+- **Base Firmware**: Originally derived from Vincent's *Generative Drum Synthesizer* (https://github.com/wgd-modular/melon-firmwares/tree/main/drums).
 - **Development**: Refactored and optimized with help from Gemini.
 - Licensed under **CC0 1.0 Universal** (Public Domain Dedication).
