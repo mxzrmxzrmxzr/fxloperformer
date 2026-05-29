@@ -9,10 +9,10 @@ A simple, audio effects processor firmware for the **WGD Modular Melon** Eurorac
 ## Key Features
 
 - **5 Color-Coded FX Pages**:
-  - **Reverb**: Room reverb algorithm based on Freeverb.
-  - **Tape Delay**: Smooth delay with continuous time adjustment and clock synchronization.
-  - **Flanger**: High-resonance, LFO-modulated delay line.
   - **Bitcrusher**: Combinable bit-depth and sample-rate reduction.
+  - **Flanger**: High-resonance, LFO-modulated delay line.
+  - **Tape Delay**: Smooth delay with continuous time adjustment and clock synchronization.
+  - **Reverb**: Room reverb algorithm based on Freeverb.
   - **Master page with DJ Filter and Dry/Wet Mix**: Single-knob bi-directional filter (Lowpass $\leftarrow$ Clean $\rightarrow$ Highpass).
 - **Master Dynamics & Signal Path**:
   - **SSL-style Master Bus Compressor**: Always-on "glue" compressor for volume leveling and saturation.
@@ -67,37 +67,37 @@ When changing pages, the physical knobs are locked to prevent parameters from in
 
 | Page Index | Page Name | LED Color (NeoPixel) | LED Behavior (Legacy Single LED) | POT 1 Function | POT 2 Function |
 | :---: | :--- | :--- | :--- | :--- | :--- |
-| **0** | **Reverb** | 🟢 Green | Slow, relaxing breathing pulse | Room Size (0.7 to 0.98) | Dry/Wet Mix |
-| **1** | **Tape Delay** | 🔵 Cyan | Flashes at current delay rate/tempo | Delay Time / Sync Div | Feedback / Delay Mix |
-| **2** | **Flanger** | 🟣 Magenta | Pulsing in sync with sweep LFO rate | LFO Rate (0.05 - 5.05Hz) | Depth & Feedback |
-| **3** | **Bitcrusher** | 🟡 Yellow | Jittery, digital noise flickering | Resolution (16 to 1-bit) | Downsampling Rate |
+| **0** | **Bitcrusher** | 🟡 Yellow | Jittery, digital noise flickering | Resolution (16 to 1-bit) | Downsampling Rate |
+| **1** | **Flanger** | 🟣 Magenta | Pulsing in sync with sweep LFO rate | LFO Rate (0.05 - 5.05Hz) | Depth & Feedback |
+| **2** | **Tape Delay** | 🔵 Cyan | Flashes at current delay rate/tempo | Delay Time / Sync Div | Feedback / Delay Mix |
+| **3** | **Reverb** | 🟢 Green | Slow, relaxing breathing pulse | Room Size (0.7 to 0.98) | Dry/Wet Mix |
 | **4** | **Master DJ** | 🔵 Blue | Solid steady light | DJ Filter (LP/Flat/HP) | Master Dry/Wet Mix |
 
 ---
 
 ## Detailed FX Operation
 
-### 1. Reverb (Page 0)
-A dense room reverb using 8 parallel comb filters and 4 cascaded all-pass filters.
-- **Room Size**: Adjusts the feedback decay time of the reverb tail.
-- **Mix**: Sets the relative level of the reverb reflections.
+### 1. Bitcrusher & Downsampler (Page 0)
+Digital degradation processor.
+- **Resolution (POT 1)**: Quantizes the audio signal amplitude. Uses a quadratic control curve ranging from pristine 16-bit down to harsh 1-bit quantization.
+- **Downsampling (POT 2)**: Decimates the sample rate by holding samples. Ranges from no decimation (1x) up to holding every 64th sample.
 
-### 2. Tape Delay (Page 1)
+### 2. Flanger (Page 1)
+An LFO-modulated delay line creating comb-filter sweeps.
+- **Rate**: Sets the speed of the sweep LFO (0.05 Hz to 5.05 Hz).
+- **Depth / Feedback**: Combines modulation depth and feedback into a single control. Turning it up increases resonance and width.
+
+### 3. Tape Delay (Page 2)
 A delay line offering up to ~890ms of echo time with continuous analog-style pitch tape-warble during time changes.
 - **Manual Mode**: If no clock is detected on **IN 1**, POT 1 sweeps the delay time from 20ms to 870ms.
 - **Clock Sync Mode**: When an external clock signal is received on **IN 1**, the delay time locks to the clock period. POT 1 selects a sync division multiplier:
   `[ 1/2, 3/4, 1/1, 1.5x, 2.0x, 3.0x, 4.0x ]`
 - **Feedback & Mix**: POT 2 controls the feedback amount (up to self-oscillation) and the delay level simultaneously.
 
-### 3. Flanger (Page 2)
-An LFO-modulated delay line creating comb-filter sweeps.
-- **Rate**: Sets the speed of the sweep LFO (0.05 Hz to 5.05 Hz).
-- **Depth / Feedback**: Combines modulation depth and feedback into a single control. Turning it up increases resonance and width.
-
-### 4. Bitcrusher & Downsampler (Page 3)
-Digital degradation processor.
-- **Resolution (POT 1)**: Quantizes the audio signal amplitude. Uses a quadratic control curve ranging from pristine 16-bit down to harsh 1-bit quantization.
-- **Downsampling (POT 2)**: Decimates the sample rate by holding samples. Ranges from no decimation (1x) up to holding every 64th sample.
+### 4. Reverb (Page 3)
+A dense room reverb using 8 parallel comb filters and 4 cascaded all-pass filters.
+- **Room Size**: Adjusts the feedback decay time of the reverb tail.
+- **Mix**: Sets the relative level of the reverb reflections.
 
 ### 5. Master DJ Filter & Wet/Dry (Page 4)
 The final stage of the audio path.
