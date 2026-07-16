@@ -2,7 +2,7 @@
 
 A simple, audio effects processor firmware for the **WGD Modular Melon** Eurorack module (based on the Raspberry Pi RP2350 microcontroller). 
 
-**FX LoPerformer** is an adaptation of the FX part of the *Generative Drum Synthesizer* firmware by Vincent Maurer. Combining a tape delay, a reverb, a flanger, a bitcrusher, and a DJ filter, it offers a comprehensive suite of effects for Eurorack systems in a compact package with performance in mind. Don't expect hifi, expect fun!
+**FX LoPerformer** is an adaptation of the FX part of the [*Generative Drum Synthesizer*](https://github.com/wgd-modular/melon-firmwares/tree/main/drums) firmware by Vincent Maurer. Combining a tape delay, a reverb, a flanger, a bitcrusher, and a DJ filter, it offers a comprehensive suite of effects for Eurorack systems in a compact package with performance in mind. Don't expect hifi, expect fun!
 
 ---
 
@@ -131,6 +131,6 @@ arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2350 --export-binaries fx-
 
 ## License & Credits
 - **Base Hardware**: WGD Modular Melon, inspired by the HAGIWO Mod 2.
-- **Base Firmware**: Originally derived from Vincent's *Generative Drum Synthesizer* (https://github.com/wgd-modular/melon-firmwares/tree/main/drums).
+- **Base Firmware**: Originally derived from Vincent's [*Generative Drum Synthesizer*](https://github.com/wgd-modular/melon-firmwares/tree/main/drums).
 - **Development**: Refactored and optimized with help from Gemini.
 - Licensed under **CC0 1.0 Universal** (Public Domain Dedication).
