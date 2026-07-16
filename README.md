@@ -1,6 +1,6 @@
 # FX LoPerformer
 
-A simple, audio effects processor firmware for the **WGD Modular Melon** Eurorack module (based on the Raspberry Pi RP2350 microcontroller). 
+A simple, audio effects processor firmware for the **WGD Modular Melon** Eurorack module (based on the Raspberry Pi RP2350 microcontroller) and it predecessor Hagiwo MOD2 (untested).
 
 **FX LoPerformer** is an adaptation of the FX part of the [*Generative Drum Synthesizer*](https://github.com/wgd-modular/melon-firmwares/tree/main/drums) firmware by Vincent Maurer. Combining a tape delay, a reverb, a flanger, a bitcrusher, and a DJ filter, it offers a comprehensive suite of effects for Eurorack systems in a compact package with performance in mind. Don't expect hifi, expect fun!
 
@@ -20,9 +20,8 @@ A simple, audio effects processor firmware for the **WGD Modular Melon** Eurorac
   - **Noise Gate & Input Filtering**: 4-point moving average filter and dynamic noise gate to eliminate ADC switching whine and background hiss.
   - **Parameter Auto-Save**: Saves all knob values to internal flash (EEPROM) after 10 seconds of inactivity or instantly upon changing pages.
   - **Potentiometer Pickup Lock**: Prevents sudden audio jumps when switching pages. A parameter is locked until the physical pot matches the stored value.
-- **Hardware Customization**:
-  - **Hardware Boot Menu**: Dual support for **NeoPixel RGB LED** (WGD Melon) and **Legacy PWM LED** (e.g. Hagiwo Mod 2) via a startup hardware menu.
-  - **Pseudo-CV Gate Control**: Trigger Input 2 (`IN 2` / GPIO 0) acts as a gate control—whenever a HIGH signal is received, the Dry/Wet mix is instantly maxed to 100% Wet (with a smooth 0.5ms slew to prevent digital clicks).
+- **Pseudo-CV Gate Control**: Trigger Input 2 (`IN 2` / GPIO 0) acts as a gate control. Whenever a HIGH signal is received, the Dry/Wet mix is instantly maxed to 100% Wet (with a smooth 0.5ms slew to prevent digital clicks).
+- **Hardware Boot Menu**: Dual support for **NeoPixel RGB LED** (WGD Melon) and **Legacy PWM LED** (e.g. Hagiwo Mod 2) via a startup hardware menu.
 
 ---
 
@@ -118,7 +117,7 @@ The final stage of the audio path.
 ### Compiling via Arduino CLI
 Compile the firmware directly from the project directory:
 ```bash
-arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2350 --export-binaries fx-man.ino
+arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2350 --export-binaries fxloperformer.ino
 ```
 
 ### Flashing the Module
